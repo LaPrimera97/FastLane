@@ -84,3 +84,12 @@ footer img{height:70px;margin-bottom:18px}
 .item .acts{display:flex;gap:8px}
 .item .btn{padding:8px 14px;font-size:11px}
 @media(max-width:860px){nav ul{display:none}.hero .wrap,.services,.contact{grid-template-columns:1fr}.mark{order:-1}.mark img{width:230px}section{padding:76px 0}.card{padding:30px}.item{grid-template-columns:56px 1fr}.item .acts{grid-column:1/-1}}
+
+.particles{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.hero,.strip,section,footer{position:relative;z-index:1}
+.hero{background:radial-gradient(900px 600px at 78% 40%,rgba(212,175,55,.16),transparent 60%)}
+.social{display:flex;gap:12px;margin-top:26px}
+.social.center{justify-content:center;margin:18px 0 0}
+.social a{width:44px;height:44px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);transition:.3s}
+.social a svg{width:20px;height:20px;fill:currentColor}
+.social a:hover{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0a0a}

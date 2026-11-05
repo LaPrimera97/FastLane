@@ -1,6 +1,8 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import Particles from '../components/Particles.jsx'
+import Social from '../components/Social.jsx'
 
 const EMAIL = 'naftalie22@gmail.com'
 const PHONE = '0715234408'
@@ -33,6 +35,7 @@ export default function Home() {
 
   return (
     <>
+      <Particles />
       <nav>
         <div className="wrap">
           <a href="#top"><img src="/logo-white.png" alt="Fast Lane Media" /></a>
@@ -149,6 +152,7 @@ export default function Home() {
             <p><b>Phone</b><a href={'tel:' + PHONE}>071 523 4408</a></p>
             <p><b>Email</b><a href={'mailto:' + EMAIL}>{EMAIL}</a></p>
             <p><b>Studio</b>Atok, Ga-Selepe, Boselakgaka Section, 0749</p>
+            <Social />
           </div>
           <form onSubmit={send}>
             <input required placeholder="Your name" value={form.name} onChange={set('name')} />
@@ -167,6 +171,7 @@ export default function Home() {
       <footer>
         <img src="/logo-white.png" alt="Fast Lane Media" />
         <p>Every moment has a story worth preserving.</p>
+        <Social center />
         <p style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} Fast Lane Media. All rights reserved. <Link to="/admin" style={{ opacity: 0.4 }}>Admin</Link></p>
       </footer>
     </>
