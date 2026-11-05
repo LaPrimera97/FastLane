@@ -1,0 +1,174 @@
+﻿import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+
+const EMAIL = 'naftalie22@gmail.com'
+const PHONE = '0715234408'
+
+export default function Home() {
+  const [media, setMedia] = useState([])
+  const [filter, setFilter] = useState('All')
+  const [form, setForm] = useState({ name: '', email: '', service: 'Photography', message: '' })
+
+  useEffect(() => {
+    supabase
+      .from('media')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setMedia(data || []))
+  }, [])
+
+  const categories = ['All', ...new Set(media.map((m) => m.category))]
+  const shown = filter === 'All' ? media : media.filter((m) => m.category === filter)
+
+  const send = (e) => {
+    e.preventDefault()
+    const subject = encodeURIComponent('Enquiry from ' + form.name + ' (' + form.service + ')')
+    const body = encodeURIComponent(form.message + '\n\nFrom: ' + form.name + '\nEmail: ' + form.email)
+    window.location.href = 'mailto:' + EMAIL + '?subject=' + subject + '&body=' + body
+  }
+
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+
+  return (
+    <>
+      <nav>
+        <div className="wrap">
+          <a href="#top"><img src="/logo-white.png" alt="Fast Lane Media" /></a>
+          <ul>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#work">Our Work</a></li>
+            <li><a href="#story">Story</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+          <a className="btn" href="#contact">Book Us</a>
+        </div>
+      </nav>
+
+      <header className="hero" id="top">
+        <div className="wrap">
+          <div>
+            <div className="eyebrow">Photography &amp; Videography</div>
+            <h1>Every moment has a <em>story</em> worth preserving.</h1>
+            <p>We capture genuine connections, emotions and memories you&rsquo;ll cherish forever.</p>
+            <div className="cta">
+              <a className="btn solid" href="#contact">Inbox Us Today</a>
+              <a className="btn" href="#work">View Our Work</a>
+            </div>
+          </div>
+          <div className="mark"><img src="/logo-gold.png" alt="" /></div>
+        </div>
+      </header>
+
+      <div className="strip">
+        <div>
+          {[0, 1].map((i) => (
+            <span key={i} style={{ margin: 0, color: 'inherit' }}>
+              Weddings<span>&#9670;</span>Portraits<span>&#9670;</span>Events<span>&#9670;</span>Brand Films<span>&#9670;</span>Celebrations<span>&#9670;</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <section id="services">
+        <div className="wrap">
+          <div className="head">
+            <div className="eyebrow">What We Do</div>
+            <h2>Two crafts. One standard of excellence.</h2>
+          </div>
+          <div className="services">
+            <div className="card">
+              <span className="n">01</span>
+              <h3>Photography</h3>
+              <p>Timeless imagery that holds the feeling of the day, not just the faces in it.</p>
+              <ul>
+                <li>Weddings &amp; engagements</li>
+                <li>Portraits &amp; family sessions</li>
+                <li>Events &amp; corporate coverage</li>
+              </ul>
+            </div>
+            <div className="card">
+              <span className="n">02</span>
+              <h3>Videography</h3>
+              <p>Cinematic storytelling that lets you relive every laugh, tear and heartbeat.</p>
+              <ul>
+                <li>Highlight films</li>
+                <li>Event &amp; ceremony coverage</li>
+                <li>Brand &amp; promotional video</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="work" style={{ paddingTop: 0 }}>
+        <div className="wrap">
+          <div className="head">
+            <div className="eyebrow">Our Work</div>
+            <h2>Moments, framed.</h2>
+          </div>
+          {media.length > 0 && (
+            <div className="filters">
+              {categories.map((c) => (
+                <button key={c} className={'chip' + (filter === c ? ' on' : '')} onClick={() => setFilter(c)}>{c}</button>
+              ))}
+            </div>
+          )}
+          {shown.length === 0 ? (
+            <div className="empty">Our latest work is coming soon.</div>
+          ) : (
+            <div className="gallery">
+              {shown.map((m) => (
+                <figure key={m.id}>
+                  {m.type === 'video' ? (
+                    <video src={m.file_url} controls preload="metadata" playsInline />
+                  ) : (
+                    <img src={m.file_url} alt={m.title} loading="lazy" />
+                  )}
+                  {m.type === 'photo' && <figcaption>{m.category}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="story" id="story">
+        <div className="wrap">
+          <blockquote>Don&rsquo;t hesitate and be late. <b>Your moment only happens once.</b></blockquote>
+          <p>Fast Lane Media is rooted in Atok, Ga-Selepe, and built on one belief: genuine connection makes the best photographs.</p>
+        </div>
+      </section>
+
+      <section id="contact">
+        <div className="wrap contact">
+          <div className="info">
+            <div className="eyebrow">Get In Touch</div>
+            <h2 style={{ fontSize: 'clamp(34px,5vw,52px)' }}>Let&rsquo;s capture yours.</h2>
+            <p><b>Phone</b><a href={'tel:' + PHONE}>071 523 4408</a></p>
+            <p><b>Email</b><a href={'mailto:' + EMAIL}>{EMAIL}</a></p>
+            <p><b>Studio</b>Atok, Ga-Selepe, Boselakgaka Section, 0749</p>
+          </div>
+          <form onSubmit={send}>
+            <input required placeholder="Your name" value={form.name} onChange={set('name')} />
+            <input required type="email" placeholder="Email address" value={form.email} onChange={set('email')} />
+            <select value={form.service} onChange={set('service')}>
+              <option>Photography</option>
+              <option>Videography</option>
+              <option>Both</option>
+            </select>
+            <textarea required placeholder="Tell us about your moment" value={form.message} onChange={set('message')} />
+            <button className="btn solid" type="submit">Send Enquiry</button>
+          </form>
+        </div>
+      </section>
+
+      <footer>
+        <img src="/logo-white.png" alt="Fast Lane Media" />
+        <p>Every moment has a story worth preserving.</p>
+        <p style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} Fast Lane Media. All rights reserved. <Link to="/admin" style={{ opacity: 0.4 }}>Admin</Link></p>
+      </footer>
+    </>
+  )
+}
