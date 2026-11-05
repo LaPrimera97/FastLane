@@ -6,11 +6,43 @@ import Social from '../components/Social.jsx'
 
 const EMAIL = 'naftalie22@gmail.com'
 const PHONE = '0715234408'
+const VIEWS = ['services', 'work', 'story', 'contact']
+const MENU = [
+  ['home', 'Home'],
+  ['services', 'Services'],
+  ['work', 'Our Work'],
+  ['story', 'Our Story'],
+  ['contact', 'Contact'],
+]
 
 export default function Home() {
   const [media, setMedia] = useState([])
   const [filter, setFilter] = useState('All')
   const [form, setForm] = useState({ name: '', email: '', service: 'Photography', message: '' })
+  const [open, setOpen] = useState(false)
+  const [status, setStatus] = useState('idle')
+
+  useEffect(() => {
+    const apply = (scroll) => {
+      const h = window.location.hash.replace('#', '')
+      document.documentElement.dataset.view = VIEWS.includes(h) ? h : 'home'
+      if (scroll && window.matchMedia('(max-width:860px)').matches) window.scrollTo(0, 0)
+    }
+    apply(false)
+    const onHash = () => apply(true)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    const onKey = (e) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open])
 
   useEffect(() => {
     supabase
@@ -24,11 +56,27 @@ export default function Home() {
   const categories = ['All', ...new Set(media.map((m) => m.category))]
   const shown = filter === 'All' ? media : media.filter((m) => m.category === filter)
 
-  const send = (e) => {
+  const send = async (e) => {
     e.preventDefault()
-    const subject = encodeURIComponent('Enquiry from ' + form.name + ' (' + form.service + ')')
-    const body = encodeURIComponent(form.message + '\n\nFrom: ' + form.name + '\nEmail: ' + form.email)
-    window.location.href = 'mailto:' + EMAIL + '?subject=' + subject + '&body=' + body
+    setStatus('sending')
+    const body = new URLSearchParams(new FormData(e.target)).toString()
+    try {
+      const r = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      })
+      if (!r.ok) throw new Error('failed')
+      setStatus('sent')
+      setForm({ name: '', email: '', service: 'Photography', message: '' })
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  const go = () => {
+    setOpen(false)
+    window.scrollTo(0, 0)
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
@@ -46,8 +94,19 @@ export default function Home() {
             <li><a href="#contact">Contact</a></li>
           </ul>
           <a className="btn" href="#contact">Book Us</a>
+          <button className={'hamburger' + (open ? ' open' : '')} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>
+            <span></span><span></span><span></span>
+          </button>
         </div>
       </nav>
+
+      <div className={'mobile-menu' + (open ? ' open' : '')} aria-hidden={!open}>
+        {MENU.map(([id, label]) => (
+          <a key={id} href={'#' + id} onClick={go}>{label}</a>
+        ))}
+        <a className="mobile-cta" href="#contact" onClick={go}>Book Us</a>
+        <Social center />
+      </div>
 
       <header className="hero" id="top">
         <div className="wrap">
@@ -59,6 +118,7 @@ export default function Home() {
               <a className="btn solid" href="#contact">Inbox Us Today</a>
               <a className="btn" href="#work">View Our Work</a>
             </div>
+            <div className="hero-social"><Social /></div>
           </div>
           <div className="mark"><img src="/logo-gold.png" alt="" /></div>
         </div>
@@ -154,16 +214,20 @@ export default function Home() {
             <p><b>Studio</b>Atok, Ga-Selepe, Boselakgaka Section, 0749</p>
             <Social />
           </div>
-          <form onSubmit={send}>
-            <input required placeholder="Your name" value={form.name} onChange={set('name')} />
-            <input required type="email" placeholder="Email address" value={form.email} onChange={set('email')} />
-            <select value={form.service} onChange={set('service')}>
+          <form name="enquiry" onSubmit={send}>
+            <input type="hidden" name="form-name" value="enquiry" />
+            <p hidden><input name="bot-field" tabIndex={-1} autoComplete="off" /></p>
+            <input required name="name" placeholder="Your name" value={form.name} onChange={set('name')} />
+            <input required name="email" type="email" placeholder="Email address" value={form.email} onChange={set('email')} />
+            <select name="service" value={form.service} onChange={set('service')}>
               <option>Photography</option>
               <option>Videography</option>
               <option>Both</option>
             </select>
-            <textarea required placeholder="Tell us about your moment" value={form.message} onChange={set('message')} />
-            <button className="btn solid" type="submit">Send Enquiry</button>
+            <textarea required name="message" placeholder="Tell us about your moment" value={form.message} onChange={set('message')} />
+            <button className="btn solid" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send Enquiry'}</button>
+            {status === 'sent' && <p className="ok">Thank you. Your enquiry has been sent and we will get back to you soon.</p>}
+            {status === 'error' && <p className="msg">Something went wrong. Please try again or reach us on WhatsApp or phone.</p>}
           </form>
         </div>
       </section>

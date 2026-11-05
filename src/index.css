@@ -93,3 +93,33 @@ footer img{height:70px;margin-bottom:18px}
 .social a{width:44px;height:44px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);transition:.3s}
 .social a svg{width:20px;height:20px;fill:currentColor}
 .social a:hover{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0a0a}
+
+nav{z-index:40}
+.hamburger,.mobile-menu,.hero-social{display:none}
+.hamburger{flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px;margin-right:-8px}
+.hamburger span{width:24px;height:1.5px;background:var(--gold);display:block;transition:.3s}
+.hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.mobile-menu a{font:500 34px "Cormorant Garamond",Georgia,serif;color:var(--tx);letter-spacing:.04em;transition:color .2s}
+.mobile-menu a:hover{color:var(--gold)}
+.mobile-menu a.mobile-cta{font:600 13px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:14px 34px;margin-top:6px}
+.mobile-menu .social{margin-top:14px}
+.hero-social .social{margin-top:0}
+@media(max-width:860px){
+  nav .btn{display:none}
+  .hamburger{display:flex}
+  .hero-social{display:block}
+  .hero .cta{display:none}
+  .mobile-menu{position:fixed;inset:0;z-index:30;background:rgba(10,10,10,.98);backdrop-filter:blur(20px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:26px;padding-top:68px;visibility:hidden;opacity:0;transition:opacity .25s,visibility .25s}
+  .mobile-menu.open{visibility:visible;opacity:1}
+  section{display:none}
+  html[data-view="services"] #services,
+  html[data-view="work"] #work,
+  html[data-view="story"] #story,
+  html[data-view="contact"] #contact{display:block}
+  html[data-view="work"] #work{padding-top:48px!important}
+  html:not([data-view="home"]) .hero,
+  html:not([data-view="home"]) .strip{display:none}
+  html[data-view="home"] .hero{min-height:calc(100svh - 68px)}
+}
