@@ -123,3 +123,5 @@ nav{z-index:40}
   html:not([data-view="home"]) .strip{display:none}
   html[data-view="home"] .hero{min-height:calc(100svh - 68px)}
 }
+
+[hidden]{display:none!important}
