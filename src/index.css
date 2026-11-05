@@ -125,3 +125,8 @@ nav{z-index:40}
 }
 
 [hidden]{display:none!important}
+
+@media(max-width:860px){
+  .hero-social{display:none}
+  html[data-view="home"] #work{display:block;padding-top:48px!important}
+}
