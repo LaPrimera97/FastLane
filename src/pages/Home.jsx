@@ -8,6 +8,7 @@ const EMAIL = 'naftalie22@gmail.com'
 const PHONE = '0715234408'
 const ACCESS_KEY = 'PASTE_YOUR_KEY_HERE'
 const SUPERAPP_LINK = ''
+const YEAR = new Date().getFullYear()
 const BKS_LINK = 'https://bkscommunityjobcenter.com'
 const VIEWS = ['services', 'work', 'story', 'contact']
 const MENU = [
@@ -24,6 +25,7 @@ export default function Home() {
   const [form, setForm] = useState({ name: '', email: '', service: 'Photography', message: '' })
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState('idle')
+  const [loadState, setLoadState] = useState('loading')
 
   useEffect(() => {
     const apply = (scroll) => {
@@ -47,13 +49,29 @@ export default function Home() {
     }
   }, [open])
 
-  useEffect(() => {
+  const fetchMedia = () =>
     supabase
       .from('media')
-      .select('*')
+      .select('id,title,category,type,file_url,created_at')
       .eq('published', true)
       .order('created_at', { ascending: false })
-      .then(({ data }) => setMedia(data || []))
+      .limit(60)
+      .then(({ data, error }) => {
+        if (error) setLoadState('error')
+        else {
+          setMedia(data || [])
+          setLoadState('ready')
+        }
+      })
+      .catch(() => setLoadState('error'))
+
+  const retryMedia = () => {
+    setLoadState('loading')
+    fetchMedia()
+  }
+
+  useEffect(() => {
+    fetchMedia()
   }, [])
 
   const categories = ['All', ...new Set(media.map((m) => m.category))]
@@ -195,7 +213,17 @@ export default function Home() {
               ))}
             </div>
           )}
-          {shown.length === 0 ? (
+          {loadState === 'loading' ? (
+            <div className="gallery">
+              {[0, 1, 2, 3, 4, 5].map((n) => (
+                <figure key={n} className="skeleton"></figure>
+              ))}
+            </div>
+          ) : loadState === 'error' ? (
+            <div className="empty">
+              We could not load our work right now. <button className="chip" onClick={retryMedia}>Try again</button>
+            </div>
+          ) : shown.length === 0 ? (
             <div className="empty">Our latest work is coming soon.</div>
           ) : (
             <div className="gallery">
@@ -204,7 +232,7 @@ export default function Home() {
                   {m.type === 'video' ? (
                     /youtube-nocookie\.com|player\.vimeo\.com/.test(m.file_url) ? <div className="embed"><iframe src={m.file_url} title={m.title} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowFullScreen></iframe></div> : <video src={m.file_url} controls preload="metadata" playsInline />
                   ) : (
-                    <img src={m.file_url} alt={m.title} loading="lazy" />
+                    <img src={m.file_url} alt={m.title} loading="lazy" decoding="async" />
                   )}
                   {m.type === 'photo' && <figcaption>{m.category}</figcaption>}
                 </figure>
@@ -278,7 +306,7 @@ export default function Home() {
         <img src="/logo-white.png" alt="Fast Lane Media" />
         <p>Every moment has a story worth preserving.</p>
         <Social center />
-        <p style={{ marginTop: 8 }}>&copy; {new Date().getFullYear()} Fast Lane Media. All rights reserved. <Link to="/admin" style={{ opacity: 0.4 }}>Admin</Link></p>
+        <p style={{ marginTop: 8 }}>&copy; {YEAR} Fast Lane Media. All rights reserved. <Link to="/admin" style={{ opacity: 0.4 }}>Admin</Link></p>
       </footer>
     </>
   )

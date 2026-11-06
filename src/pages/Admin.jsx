@@ -1,9 +1,12 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { resumableUpload } from '../lib/resumableUpload'
+import { compressImage } from '../lib/compressImage'
 
 const MAX_MB = 50
 const CATEGORIES = ['Weddings', 'Portraits', 'Family', 'Events', 'Brand Films', 'Other']
+const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm']
 
 const toEmbed = (url) => {
   const u = url.trim()
@@ -25,8 +28,9 @@ export default function Admin() {
   const [linkTitle, setLinkTitle] = useState('')
 
   const load = async () => {
-    const { data } = await supabase.from('media').select('*').order('created_at', { ascending: false })
-    setItems(data || [])
+    const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false })
+    if (error) setStatus('Could not load your media: ' + error.message)
+    else setItems(data || [])
   }
 
   useEffect(() => {
@@ -37,7 +41,21 @@ export default function Admin() {
         load()
       }
     })
-  }, [])
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') nav('/admin/login')
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [nav])
+
+  useEffect(() => {
+    if (!busy) return
+    const warn = (e) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [busy])
 
   const upload = async (e) => {
     const files = [...e.target.files]
@@ -46,17 +64,28 @@ export default function Admin() {
     setBusy(true)
     const notes = []
     let done = 0
-    for (const [i, file] of files.entries()) {
-      setStatus('Uploading ' + (i + 1) + ' of ' + files.length + ': ' + file.name)
+    for (const [i, original] of files.entries()) {
+      const label = 'Uploading ' + (i + 1) + ' of ' + files.length + ': ' + original.name
+      if (!ALLOWED.includes(original.type)) {
+        notes.push(original.name + ' is not a supported file type and was skipped')
+        continue
+      }
+      setStatus(label)
+      const file = original.type.startsWith('image/') ? await compressImage(original) : original
       if (file.size > MAX_MB * 1024 * 1024) {
-        notes.push(file.name + ' is over ' + MAX_MB + ' MB and was skipped')
+        notes.push(original.name + ' is over ' + MAX_MB + ' MB and was skipped. For long videos, use a YouTube or Vimeo link instead')
         continue
       }
       const type = file.type.startsWith('video') ? 'video' : 'photo'
       const path = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      const up = await supabase.storage.from('media').upload(path, file, { contentType: file.type })
-      if (up.error) {
-        notes.push(file.name + ': ' + up.error.message)
+      let failed = ''
+      try {
+        await resumableUpload('media', path, file, (p) => setStatus(label + ' (' + p + '%)'))
+      } catch (err) {
+        failed = err.message || 'Upload failed. Check your connection and try again.'
+      }
+      if (failed) {
+        notes.push(original.name + ': ' + failed)
         continue
       }
       const { data } = supabase.storage.from('media').getPublicUrl(path)
@@ -67,8 +96,10 @@ export default function Admin() {
         file_path: path,
         file_url: data.publicUrl,
       })
-      if (ins.error) notes.push(file.name + ': ' + ins.error.message)
-      else done++
+      if (ins.error) {
+        await supabase.storage.from('media').remove([path])
+        notes.push(original.name + ': ' + ins.error.message)
+      } else done++
     }
     setBusy(false)
     setStatus(done + ' uploaded.' + (notes.length ? ' ' + notes.join(' | ') : ''))
@@ -100,14 +131,22 @@ export default function Admin() {
   }
 
   const toggle = async (m) => {
-    await supabase.from('media').update({ published: !m.published }).eq('id', m.id)
+    const { error } = await supabase.from('media').update({ published: !m.published }).eq('id', m.id)
+    if (error) setStatus('Could not update: ' + error.message)
     load()
   }
 
   const remove = async (m) => {
     if (!window.confirm('Delete ' + m.title + '? This cannot be undone.')) return
-    if (m.file_path) await supabase.storage.from('media').remove([m.file_path])
-    await supabase.from('media').delete().eq('id', m.id)
+    if (m.file_path) {
+      const rm = await supabase.storage.from('media').remove([m.file_path])
+      if (rm.error) {
+        setStatus('Could not delete the file: ' + rm.error.message)
+        return
+      }
+    }
+    const del = await supabase.from('media').delete().eq('id', m.id)
+    if (del.error) setStatus('Could not delete: ' + del.error.message)
     load()
   }
 
@@ -138,7 +177,7 @@ export default function Admin() {
             {busy ? 'Uploading...' : 'Choose files'}
             <input type="file" accept="image/*,video/*" multiple hidden disabled={busy} onChange={upload} />
           </label>
-          <small>Maximum {MAX_MB} MB per file</small>
+          <small>Maximum {MAX_MB} MB per file. Photos are resized automatically.</small>
         </div>
         <div className="drop">
           <h3 style={{ fontSize: 26, color: 'var(--gold)' }}>Add a YouTube or Vimeo video</h3>
@@ -152,7 +191,7 @@ export default function Admin() {
         <div className="list">
           {items.map((m) => (
             <div className="item" key={m.id}>
-              {m.type === 'video' ? <div className="th">{m.file_path ? 'VIDEO' : 'LINK'}</div> : <img src={m.file_url} alt="" />}
+              {m.type === 'video' ? <div className="th">{m.file_path ? 'VIDEO' : 'LINK'}</div> : <img src={m.file_url} alt="" loading="lazy" />}
               <div>
                 {m.title}
                 <small>{m.category} &middot; {m.type === 'video' && !m.file_path ? 'video link' : m.type} &middot; {m.published ? 'Published' : 'Hidden'}</small>

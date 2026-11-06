@@ -146,3 +146,7 @@ nav{z-index:40}
 .proj p{color:var(--mu);font-size:14px;line-height:1.55;margin:6px 0 10px}
 .proj .go{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
 @media(max-width:860px){.projects{grid-template-columns:1fr}.apps{margin-top:56px}}
+
+.skeleton{aspect-ratio:4/3;background:linear-gradient(90deg,#141414 25%,#1f1f1f 50%,#141414 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skeleton{animation:none}}
