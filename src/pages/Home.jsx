@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Particles from '../components/Particles.jsx'
@@ -185,7 +185,7 @@ export default function Home() {
               {shown.map((m) => (
                 <figure key={m.id}>
                   {m.type === 'video' ? (
-                    <video src={m.file_url} controls preload="metadata" playsInline />
+                    /youtube-nocookie\.com|player\.vimeo\.com/.test(m.file_url) ? <div className="embed"><iframe src={m.file_url} title={m.title} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowFullScreen></iframe></div> : <video src={m.file_url} controls preload="metadata" playsInline />
                   ) : (
                     <img src={m.file_url} alt={m.title} loading="lazy" />
                   )}
