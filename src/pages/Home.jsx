@@ -6,6 +6,9 @@ import Social from '../components/Social.jsx'
 
 const EMAIL = 'naftalie22@gmail.com'
 const PHONE = '0715234408'
+const ACCESS_KEY = 'PASTE_YOUR_KEY_HERE'
+const SUPERAPP_LINK = ''
+const BKS_LINK = 'https://bkscommunityjobcenter.com'
 const VIEWS = ['services', 'work', 'story', 'contact']
 const MENU = [
   ['home', 'Home'],
@@ -59,14 +62,19 @@ export default function Home() {
   const send = async (e) => {
     e.preventDefault()
     setStatus('sending')
-    const body = new URLSearchParams(new FormData(e.target)).toString()
+    if (ACCESS_KEY.startsWith('PASTE')) {
+      const text = 'Name: ' + form.name + '\nEmail: ' + form.email + '\nService: ' + form.service + '\n\n' + form.message
+      window.location.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent('Enquiry from ' + form.name) + '&body=' + encodeURIComponent(text)
+      setStatus('idle')
+      return
+    }
+    const data = new FormData(e.target)
+    data.append('access_key', ACCESS_KEY)
+    data.append('subject', 'New enquiry from the Fast Lane Media website')
     try {
-      const r = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-      })
-      if (!r.ok) throw new Error('failed')
+      const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: data })
+      const j = await r.json()
+      if (!j.success) throw new Error('failed')
       setStatus('sent')
       setForm({ name: '', email: '', service: 'Photography', message: '' })
     } catch {
@@ -118,7 +126,6 @@ export default function Home() {
               <a className="btn solid" href="#contact">Inbox Us Today</a>
               <a className="btn" href="#work">View Our Work</a>
             </div>
-            <div className="hero-social"><Social /></div>
           </div>
           <div className="mark"><img src="/logo-gold.png" alt="" /></div>
         </div>
@@ -128,7 +135,7 @@ export default function Home() {
         <div>
           {[0, 1].map((i) => (
             <span key={i} style={{ margin: 0, color: 'inherit' }}>
-              Weddings<span>&#9670;</span>Portraits<span>&#9670;</span>Events<span>&#9670;</span>Brand Films<span>&#9670;</span>Celebrations<span>&#9670;</span>
+              Weddings<span>&#9670;</span>Portraits<span>&#9670;</span>Events<span>&#9670;</span>Brand Films<span>&#9670;</span>Celebrations<span>&#9670;</span>Websites<span>&#9670;</span>Web Applications<span>&#9670;</span>Mobile Apps<span>&#9670;</span>
             </span>
           ))}
         </div>
@@ -138,7 +145,7 @@ export default function Home() {
         <div className="wrap">
           <div className="head">
             <div className="eyebrow">What We Do</div>
-            <h2>Two crafts. One standard of excellence.</h2>
+            <h2>Three services. One standard of excellence.</h2>
           </div>
           <div className="services">
             <div className="card">
@@ -159,6 +166,16 @@ export default function Home() {
                 <li>Highlight films</li>
                 <li>Event &amp; ceremony coverage</li>
                 <li>Brand &amp; promotional video</li>
+              </ul>
+            </div>
+            <div className="card">
+              <span className="n">03</span>
+              <h3>Websites &amp; Apps</h3>
+              <p>Digital products built around your business, from a simple online presence to a custom platform.</p>
+              <ul>
+                <li>Business websites</li>
+                <li>Web applications</li>
+                <li>Mobile apps</li>
               </ul>
             </div>
           </div>
@@ -194,6 +211,31 @@ export default function Home() {
               ))}
             </div>
           )}
+
+          <div className="apps">
+            <div className="head">
+              <div className="eyebrow">Websites &amp; Apps</div>
+              <h2>Built by us, live today.</h2>
+            </div>
+            <div className="projects">
+              <a className="proj" href={BKS_LINK} target="_blank" rel="noopener noreferrer">
+                <div className="pl"><span>BKS</span><img src="/projects/bks.png" alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} /></div>
+                <div>
+                  <h4>BKS Community Job Center</h4>
+                  <p>A bilingual recruitment platform built to connect mine host communities with local jobs.</p>
+                  <span className="go">Visit site &rarr;</span>
+                </div>
+              </a>
+              <a className="proj" href={SUPERAPP_LINK || '#contact'} {...(SUPERAPP_LINK ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                <div className="pl"><span>SA</span><img src="/projects/superapp.png" alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} /></div>
+                <div>
+                  <h4>SuperApp</h4>
+                  <p>A branded mobile app that lets clubs and brands own their community, with posts, reels, chat and events.</p>
+                  <span className="go">{SUPERAPP_LINK ? 'Install on Android \u2192' : 'Coming soon \u00b7 Request a demo \u2192'}</span>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -214,15 +256,15 @@ export default function Home() {
             <p><b>Studio</b>Atok, Ga-Selepe, Boselakgaka Section, 0749</p>
             <Social />
           </div>
-          <form name="enquiry" onSubmit={send}>
-            <input type="hidden" name="form-name" value="enquiry" />
-            <p hidden><input name="bot-field" tabIndex={-1} autoComplete="off" /></p>
+          <form onSubmit={send}>
+            <input type="checkbox" name="botcheck" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
             <input required name="name" placeholder="Your name" value={form.name} onChange={set('name')} />
             <input required name="email" type="email" placeholder="Email address" value={form.email} onChange={set('email')} />
             <select name="service" value={form.service} onChange={set('service')}>
               <option>Photography</option>
               <option>Videography</option>
               <option>Both</option>
+              <option>Websites &amp; Apps</option>
             </select>
             <textarea required name="message" placeholder="Tell us about your moment" value={form.message} onChange={set('message')} />
             <button className="btn solid" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send Enquiry'}</button>

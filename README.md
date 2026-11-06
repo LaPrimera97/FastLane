@@ -1,16 +1,25 @@
-# React + Vite
+﻿# Fast Lane Media
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Website and admin dashboard for Fast Lane Media, a photography and videography studio in Atok, Limpopo.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React and Vite
+- Supabase (database, auth and file storage for the gallery)
+- Cloudflare (hosting)
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+npm install
+npm run build
+npm run preview
 
-## Expanding the Oxlint configuration
+The public Supabase address and anon key are in .env.production and are read at build time.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Admin
+
+/admin/login. Upload photos and videos, or paste a YouTube or Vimeo link, and publish or hide items.
+
+## Enquiry form
+
+Set ACCESS_KEY in src/pages/Home.jsx to a Web3Forms access key. Until then the form opens the visitor's email app.
