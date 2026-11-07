@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'

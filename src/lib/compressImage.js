@@ -1,4 +1,4 @@
-﻿const MAX_SIDE = 2400
+const MAX_SIDE = 2400
 const QUALITY = 0.85
 
 export async function compressImage(file) {

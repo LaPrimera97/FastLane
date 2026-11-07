@@ -1,4 +1,4 @@
-﻿const FACEBOOK = 'https://www.facebook.com/FastlaneMediaa'
+const FACEBOOK = 'https://www.facebook.com/FastlaneMediaa'
 const WHATSAPP = 'https://wa.me/27715234408'
 
 export default function Social({ center }) {

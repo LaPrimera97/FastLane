@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fastlane",
   "compatibility_date": "2026-11-04",

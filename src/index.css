@@ -1,4 +1,4 @@
-﻿:root{--bg:#0a0a0a;--bg2:#121110;--line:#2a2418;--gold:#d4af37;--gold2:#f1d77a;--tx:#f4efe4;--mu:#a9a190;color-scheme:dark}
+:root{--bg:#0a0a0a;--bg2:#121110;--line:#2a2418;--gold:#d4af37;--gold2:#f1d77a;--tx:#f4efe4;--mu:#a9a190;color-scheme:dark}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;scroll-padding-top:80px}
 body{background:var(--bg);color:var(--tx);font:400 16px/1.7 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
