@@ -1,4 +1,4 @@
-import * as tus from 'tus-js-client'
+﻿import * as tus from 'tus-js-client'
 import { supabase } from './supabase'
 
 export async function resumableUpload(bucket, path, file, onProgress) {
@@ -10,7 +10,6 @@ export async function resumableUpload(bucket, path, file, onProgress) {
       endpoint: 'https://' + ref + '.storage.supabase.co/storage/v1/upload/resumable',
       retryDelays: [0, 3000, 5000, 10000, 20000, 30000],
       headers: {
-        authorization: 'Bearer ' + data.session.access_token,
         apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
         'x-upsert': 'false',
       },
@@ -25,7 +24,8 @@ export async function resumableUpload(bucket, path, file, onProgress) {
       },
       onBeforeRequest: async (req) => {
         const { data: fresh } = await supabase.auth.getSession()
-        if (fresh.session) req.setHeader('authorization', 'Bearer ' + fresh.session.access_token)
+        const token = fresh.session ? fresh.session.access_token : data.session.access_token
+        req.setHeader('Authorization', 'Bearer ' + token)
       },
       onError: reject,
       onProgress: (sent, total) => onProgress(Math.round((sent / total) * 100)),
